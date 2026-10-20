@@ -11,14 +11,14 @@ Type `/factory <what you want>` and it runs:
 /factory <description>
       │
       ▼
-1. DISCOVERY + GROUNDED BRAINSTORM + SPEC   → superpowers:brainstorming
+1. DISCOVERY + GROUNDED BRAINSTORM + SPEC
       │
    ┌──────────────┐
    │ HUMAN GATE 1 │  approve the spec — nothing is built before this
    └──────────────┘
       │
       ▼
-2. PLAN                                      → superpowers:writing-plans
+2. PLAN
       │
    ┌──────────────┐
    │ HUMAN GATE 2 │  approve the plan before any code
@@ -71,11 +71,18 @@ It's user-scoped, so `/factory` is available in every project you work in.
 
 ## How it's built
 
-`/factory` orchestrates the [superpowers](https://github.com/obra/superpowers)
-skills for the generic phases (brainstorming, writing-plans,
-finishing-a-development-branch) and carries its own build-and-review pipeline in
-`factory/references/build-pipeline.md`. The subagent prompts live in
-`factory/references/builder-brief.md` and `factory/references/reviewer-brief.md`.
+`/factory` is **self-contained** — every phase's method lives in its own
+`factory/references/` files, with no runtime dependency on other skills:
+
+- `discovery-and-spec.md` — grounded discovery, structured questions, the spec.
+- `writing-the-plan.md` — turning the approved spec into a task-and-step plan.
+- `build-pipeline.md` — the branch, builder, reviewer fan-out, capped fix-loop,
+  and final approver, plus the per-role model table.
+- `builder-brief.md` / `reviewer-brief.md` — the subagent prompt templates.
+- `finishing.md` — the finishing menu.
+
+The design is **inspired by** [superpowers](https://github.com/obra/superpowers)
+and Anthropic's skill-authoring guidance, but doesn't invoke those skills.
 
 ## License
 

@@ -20,8 +20,8 @@ are local — never push, never open a PR, never touch a remote.
 
 **Per task:**
 
-1. Work the plan's steps in order under test-driven-development: write the failing
-   test, watch it fail, implement the minimum, watch it pass.
+1. Work the plan's steps in order, test-first: write the failing test, watch it fail,
+   implement the minimum, watch it pass.
 2. Run the project's verification before calling a task done:
    {{verification_commands}} <!-- e.g. vendor/bin/pint --dirty; vendor/bin/phpstan;
    php artisan test --compact <path>; npm run lint -->

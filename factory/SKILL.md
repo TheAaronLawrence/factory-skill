@@ -8,14 +8,17 @@ description: Use when taking a feature, bug, or change from a rough one-line req
 ## Overview
 
 `/factory <what you want>` drives one change from a rough request to reviewed,
-locally-committed code. It does not invent its own process — it **orchestrates**
-the superpowers skills for the generic phases and adds its own build-and-review
-pipeline for the parts that differ. It stops at three human gates and never
-performs a remote git action on its own.
+locally-committed code. It carries its **own** process end to end — discovery, spec,
+plan, a multi-agent build-and-review pipeline, and a finishing menu — stopping at
+three human gates and never performing a remote git action on its own.
 
-**Core principle:** make the good process (grounded discovery, a written spec,
-a plan, multi-dimension review) the default path, while the decisions that are
-the human's to make stay the human's.
+The approach is **inspired by** the superpowers skills and Anthropic's skill-authoring
+guidance, but `/factory` is **self-contained**: every phase's method lives in this
+skill's own `references/` files. It does not invoke those skills at runtime.
+
+**Core principle:** make the good process (grounded discovery, a written spec, a plan,
+multi-dimension review) the default path, while the decisions that are the human's to
+make stay the human's.
 
 ## The flow
 
@@ -23,74 +26,49 @@ the human's to make stay the human's.
 /factory <description>
       │
       ▼
-1. DISCOVERY + GROUNDED BRAINSTORM + SPEC   → superpowers:brainstorming
+1. DISCOVERY + GROUNDED BRAINSTORM + SPEC   → references/discovery-and-spec.md
       │
    ┌──────────────┐
    │ HUMAN GATE 1 │  approve the spec — nothing is built before this
-   └──────────────┘        (this IS brainstorming's hard-gate)
+   └──────────────┘
       │
       ▼
-2. PLAN                                      → superpowers:writing-plans
+2. PLAN                                      → references/writing-the-plan.md
       │
    ┌──────────────┐
-   │ HUMAN GATE 2 │  approve the plan + execution approach before any code
+   │ HUMAN GATE 2 │  approve the plan before any code
    └──────────────┘
       │
       ▼
 3. BUILD PIPELINE                            → references/build-pipeline.md
-      local branch · resumable opus builder · parallel read-only reviewers
+      local branch · resumable builder · parallel read-only reviewers
       · fix-loop (max 2 rounds, adjudicate on cap-out) · final approver
       │
    ┌──────────────┐
    │ HUMAN GATE 3 │  finishing menu: merge locally / push+PR / leave as-is
-   └──────────────┘        (this IS finishing-a-development-branch)
+   └──────────────┘                         → references/finishing.md
 ```
 
 ## Phases
 
-**1. Discovery, grounded brainstorm, spec.**
-**REQUIRED SUB-SKILL:** superpowers:brainstorming. Run it fully — the
-loop-until-clear discovery back-and-forth, producing the written design doc. Ground
-it in evidence: **dispatch read-only codebase exploration** (the Explore agent, or
-`codebase-memory` where available) to gather the affected files, prior art, and
-conventions the spec must account for — findings feed the spec, guesses are marked as
-guesses. Its hard-gate (nothing built until the human approves the doc) **is Gate 1**.
-Do not shortcut discovery even when the request looks obvious.
+**1. Discovery, grounded brainstorm, spec.** Follow `references/discovery-and-spec.md`:
+ground the request in the real codebase (read-only exploration), run a looping
+back-and-forth posed as **structured, batched `AskUserQuestion` rounds**, then write
+the spec. Its approval is **Gate 1**. Do not shortcut discovery even when the request
+looks obvious.
 
-**How to pose the questions.** This adapts brainstorming's discovery for `/factory`:
-same loop-until-clear depth, but **structured**, not one prose question at a time.
+**2. Plan.** Follow `references/writing-the-plan.md`: turn the approved spec into a
+task-and-step plan with exact files, interfaces, and RED→GREEN→commit steps. Present
+it and **wait** — this is **Gate 2**. An approved spec does not flow into the build on
+its own.
 
-- Use Claude's **`AskUserQuestion`** tool rather than free prose whenever the decision
-  has recognisable options. Give each question **2–4 concrete, mutually-exclusive
-  options**, each with a one-line description of what it means or trades off. The
-  human can always pick "Other" to free-type — you don't add that yourself.
-- **Batch independent questions** — up to **four per `AskUserQuestion` call** — so the
-  human answers a round together instead of a message per question. Group what's
-  genuinely independent; keep a follow-up that depends on an answer for the next round.
-- Put your **recommended option first** and say why in its description.
-- Set `multiSelect` when choices aren't exclusive (e.g. "which fields to export").
-  The 2–4 options cap still applies — if there are more candidates than fit, offer
-  the common few and let "Other" cover the rest.
-- Reserve **open free-text** questions for genuinely open discovery where fixed
-  options would railroad the answer (the real "why", unknown constraints).
-- Keep looping rounds until the need is clear — structured questions speed each round;
-  they don't cap how many you ask.
+**3. Build pipeline.** Follow `references/build-pipeline.md`: create a local branch,
+dispatch the resumable builder, fan out the read-only reviewers the change needs, run
+the capped fix-loop, then the final approver.
 
-**2. Plan.**
-**REQUIRED SUB-SKILL:** superpowers:writing-plans, off the approved spec. Then
-present the plan to the human and **wait** — this is **Gate 2**. `/factory` adds
-this gate on top of stock: an approved spec does not flow into the build.
-
-**3. Build pipeline.**
-Read `references/build-pipeline.md` and follow it: create a local branch, dispatch
-the resumable builder, fan out the read-only reviewers the change needs, run the
-capped fix-loop, then the final approver.
-
-**4. Finish.**
-**REQUIRED SUB-SKILL:** superpowers:finishing-a-development-branch. Present its menu
-and **wait** — this is **Gate 3**. Preface it with a summary of what was built and
-any findings carried past the fix-loop cap. No remote action happens unless the
-human picks the push+PR option.
+**4. Finish.** Follow `references/finishing.md`: summarise what was built (and any
+carried findings), then present the finishing menu and **wait** — this is **Gate 3**.
+No remote action happens unless the human picks the push+PR option.
 
 ## Rules that must hold
 
@@ -150,7 +128,7 @@ find into the builder and reviewer briefs:
   `business-rules-docs` rule) does the builder update doc pages in the same change.
   Projects without it skip this entirely.
 
-When run here in isuzu-intranet, this picks up actions-not-services, Form Requests,
-`tw-` Tailwind, Spatie DTOs, the `vendor/bin/pint --dirty` / `vendor/bin/phpstan` /
-`php artisan test --compact` / `npm run lint` verification, and the
-business-rules-docs sync — all automatically, none of it baked into the skill.
+For example, in a Laravel + Vue project whose `CLAUDE.md` mandates actions-not-services,
+Form Requests, `tw-`-prefixed Tailwind, and Spatie DTOs, with verification
+`vendor/bin/pint --dirty` / `vendor/bin/phpstan` / `php artisan test` / `npm run lint`,
+all of that is picked up automatically — none of it is baked into the skill.

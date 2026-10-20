@@ -124,7 +124,6 @@ session's, which may not match).
 
 | Role                    | Model  |
 | ----------------------- | ------ |
-| spec-writer             | opus   |
 | builder                 | opus   |
 | security reviewer       | opus   |
 | code reviewer           | sonnet |
